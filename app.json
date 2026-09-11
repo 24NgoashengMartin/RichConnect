@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "RichConnect",
+    "slug": "richconnect",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "platforms": ["android"],
+    "android": {
+      "package": "com.richconnect.app"
+    }
+  }
+}
