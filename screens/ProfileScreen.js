@@ -6,15 +6,16 @@ import { auth, db } from '../firebase';
 export default function ProfileScreen({ navigation }) {
   const [editing, setEditing] = useState(false);
   const [profile, setProfile] = useState({
-    name: 'Martin Ngoasheng',
-    headline: 'Final-year IT Student | Aspiring Cybersecurity Expert',
-    programme: 'IT Diploma',
-    campus: 'Richfield Pretoria',
-    skills: 'JavaScript, React Native, Firebase, Python, Cybersecurity',
-    github: 'github.com/24NgoashengMartin',
-    linkedin: 'linkedin.com/in/martin-ngoasheng',
-    about: 'Final-year IT Diploma student passionate about cybersecurity, fintech and tech entrepreneurship.',
+    name: '',
+    headline: '',
+    programme: '',
+    campus: '',
+    skills: '',
+    github: '',
+    linkedin: '',
+    about: '',
   });
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => { loadProfile(); }, []);
 
@@ -23,11 +24,17 @@ export default function ProfileScreen({ navigation }) {
       const user = auth.currentUser;
       if (!user) return;
       const docSnap = await getDoc(doc(db, 'profiles', user.uid));
-      if (docSnap.exists()) setProfile(docSnap.data());
-    } catch (e) { console.log(e); }
+      if (docSnap.exists()) {
+        setProfile(docSnap.data());
+      } else {
+        setEditing(true);
+      }
+      setLoaded(true);
+    } catch (e) { console.log(e); setLoaded(true); }
   };
 
   const saveProfile = async () => {
+    if (!profile.name) { Alert.alert('Error', 'Please enter your name'); return; }
     try {
       const user = auth.currentUser;
       if (!user) return;
@@ -36,6 +43,12 @@ export default function ProfileScreen({ navigation }) {
       setEditing(false);
     } catch (e) { Alert.alert('Error', e.message); }
   };
+
+  if (!loaded) return (
+    <View style={styles.loading}>
+      <Text style={styles.loadingText}>Loading profile...</Text>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
@@ -48,48 +61,62 @@ export default function ProfileScreen({ navigation }) {
       </View>
       <ScrollView>
         <View style={styles.profileCard}>
-          <View style={styles.avatar}><Text style={styles.avatarText}>MN</Text></View>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>{profile.name ? profile.name.split(' ').map(n => n[0]).join('').toUpperCase() : '?'}</Text>
+          </View>
           {editing ? (
             <>
-              <TextInput style={styles.editInput} value={profile.name} onChangeText={t => setProfile({...profile, name: t})} placeholder="Full Name"/>
-              <TextInput style={styles.editInput} value={profile.headline} onChangeText={t => setProfile({...profile, headline: t})} placeholder="Headline"/>
+              <TextInput style={styles.editInput} value={profile.name} onChangeText={t => setProfile({...profile, name: t})} placeholder="Full Name *"/>
+              <TextInput style={styles.editInput} value={profile.headline} onChangeText={t => setProfile({...profile, headline: t})} placeholder="Professional Headline"/>
             </>
           ) : (
             <>
-              <Text style={styles.name}>{profile.name}</Text>
-              <Text style={styles.role}>{profile.headline}</Text>
+              <Text style={styles.name}>{profile.name || 'Add your name'}</Text>
+              <Text style={styles.role}>{profile.headline || 'Add your headline'}</Text>
             </>
           )}
-          <Text style={styles.location}>📍 {profile.campus}</Text>
+          <Text style={styles.location}>📍 {profile.campus || 'Add your campus'}</Text>
         </View>
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>About</Text>
-          {editing ? <TextInput style={styles.editInput} value={profile.about} onChangeText={t => setProfile({...profile, about: t})} multiline/> : <Text style={styles.sectionText}>{profile.about}</Text>}
+          {editing ? (
+            <TextInput style={styles.editInput} value={profile.about} onChangeText={t => setProfile({...profile, about: t})} multiline placeholder="Tell employers about yourself..."/>
+          ) : (
+            <Text style={styles.sectionText}>{profile.about || 'Add a professional summary'}</Text>
+          )}
         </View>
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Skills</Text>
-          {editing ? <TextInput style={styles.editInput} value={profile.skills} onChangeText={t => setProfile({...profile, skills: t})} placeholder="Skills (comma separated)"/> : (
+          {editing ? (
+            <TextInput style={styles.editInput} value={profile.skills} onChangeText={t => setProfile({...profile, skills: t})} placeholder="e.g. JavaScript, Python, Firebase"/>
+          ) : profile.skills ? (
             <View style={styles.skillRow}>
               {profile.skills.split(',').map((skill, i) => (
                 <View key={i} style={styles.skillBadge}><Text style={styles.skillText}>{skill.trim()}</Text></View>
               ))}
             </View>
+          ) : (
+            <Text style={styles.placeholder}>Add your skills</Text>
           )}
         </View>
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Education</Text>
           {editing ? (
             <>
-              <TextInput style={styles.editInput} value={profile.programme} onChangeText={t => setProfile({...profile, programme: t})} placeholder="Programme"/>
-              <TextInput style={styles.editInput} value={profile.campus} onChangeText={t => setProfile({...profile, campus: t})} placeholder="Campus"/>
+              <TextInput style={styles.editInput} value={profile.programme} onChangeText={t => setProfile({...profile, programme: t})} placeholder="Programme e.g. IT Diploma"/>
+              <TextInput style={styles.editInput} value={profile.campus} onChangeText={t => setProfile({...profile, campus: t})} placeholder="Campus e.g. Richfield Pretoria"/>
             </>
           ) : (
             <>
-              <Text style={styles.eduTitle}>{profile.programme} — {profile.campus}</Text>
-              <Text style={styles.eduSub}>2022 – 2026</Text>
+              <Text style={styles.eduTitle}>{profile.programme || 'Add your programme'}</Text>
+              <Text style={styles.eduSub}>{profile.campus || 'Add your campus'}</Text>
             </>
           )}
         </View>
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Links</Text>
           {editing ? (
@@ -99,8 +126,8 @@ export default function ProfileScreen({ navigation }) {
             </>
           ) : (
             <>
-              <Text style={styles.linkText}>🔗 {profile.github}</Text>
-              <Text style={styles.linkText}>💼 {profile.linkedin}</Text>
+              <Text style={styles.linkText}>🔗 {profile.github || 'Add GitHub'}</Text>
+              <Text style={styles.linkText}>💼 {profile.linkedin || 'Add LinkedIn'}</Text>
             </>
           )}
         </View>
@@ -110,6 +137,8 @@ export default function ProfileScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  loading: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f0f4ff' },
+  loadingText: { color: '#003399', fontSize: 16 },
   container: { flex: 1, backgroundColor: '#f0f4ff' },
   header: { backgroundColor: '#003399', padding: 24, paddingTop: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   back: { color: '#aac4ff', fontSize: 16 },
@@ -124,6 +153,7 @@ const styles = StyleSheet.create({
   section: { backgroundColor: '#fff', margin: 16, marginTop: 0, borderRadius: 12, padding: 16, elevation: 2 },
   sectionTitle: { fontSize: 15, fontWeight: 'bold', color: '#003399', marginBottom: 8 },
   sectionText: { color: '#444', fontSize: 13, lineHeight: 20 },
+  placeholder: { color: '#aaa', fontSize: 13, fontStyle: 'italic' },
   skillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   skillBadge: { backgroundColor: '#e8eeff', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
   skillText: { color: '#003399', fontSize: 12, fontWeight: '600' },

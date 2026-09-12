@@ -10,6 +10,7 @@ import ProfileScreen from './screens/ProfileScreen';
 import JobsScreen from './screens/JobsScreen';
 import ChatScreen from './screens/ChatScreen';
 import AnalyticsScreen from './screens/AnalyticsScreen';
+import PostJobScreen from './screens/PostJobScreen'; 
 
 const Stack = createStackNavigator();
 
@@ -26,6 +27,7 @@ function App() {
         <Stack.Screen name="Jobs" component={JobsScreen} />
         <Stack.Screen name="Chat" component={ChatScreen} />
         <Stack.Screen name="Analytics" component={AnalyticsScreen} />
+        <Stack.Screen name="PostJob" component={PostJobScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
