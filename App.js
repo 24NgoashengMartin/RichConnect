@@ -15,6 +15,7 @@ import PendingApproval from './screens/PendingApproval';
 import SearchScreen from './screens/SearchScreen';
 import ConnectionsScreen from './screens/ConnectionsScreen';
 import MessagingScreen from './screens/MessagingScreen';
+import NotificationsScreen from './screens/NotificationsScreen';
 
 const Stack = createStackNavigator();
 
@@ -36,6 +37,7 @@ function App() {
         <Stack.Screen name="Search" component={SearchScreen} />
         <Stack.Screen name="Connections" component={ConnectionsScreen} />
         <Stack.Screen name="Messaging" component={MessagingScreen} />
+        <Stack.Screen name="Notifications" component={NotificationsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
