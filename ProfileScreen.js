@@ -36,7 +36,7 @@ export default function ProfileScreen({ navigation }) {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Education</Text>
           <Text style={styles.eduTitle}>IT Diploma — Richfield Graduate Institute</Text>
-          <Text style={styles.eduSub}>2022 – 2026 • Tembisa Campus</Text>
+          <Text style={styles.eduSub}>2022 – 2026 • Pretoria Campus</Text>
         </View>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Experience</Text>

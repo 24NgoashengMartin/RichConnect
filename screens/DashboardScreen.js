@@ -6,7 +6,7 @@ export default function DashboardScreen({ navigation }) {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>RichConnect</Text>
-        <Text style={styles.headerSub}>Welcome, Martin</Text>
+        <Text style={styles.headerSub}>Welcome, Martin 👋</Text>
       </View>
       <ScrollView style={styles.feed}>
         <Text style={styles.sectionTitle}>Recent Activity</Text>
@@ -15,12 +15,15 @@ export default function DashboardScreen({ navigation }) {
             <Text style={styles.cardText}>{item}</Text>
           </View>
         ))}
+        <TouchableOpacity style={styles.analyticsBtn} onPress={() => navigation.navigate('Analytics')}>
+          <Text style={styles.analyticsBtnText}>📊 View My Analytics</Text>
+        </TouchableOpacity>
       </ScrollView>
       <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem}><Text style={styles.navText}>Home</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Profile')}><Text style={styles.navText}>Profile</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}><Text style={styles.navText}>Jobs</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}><Text style={styles.navText}>Chat</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.navItem}><Text style={styles.navText}>🏠 Home</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Profile')}><Text style={styles.navText}>👤 Profile</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Jobs')}><Text style={styles.navText}>💼 Jobs</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Chat')}><Text style={styles.navText}>💬 Chat</Text></TouchableOpacity>
       </View>
     </View>
   );
@@ -35,6 +38,8 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 16, fontWeight: 'bold', color: '#003399', marginBottom: 12 },
   card: { backgroundColor: '#fff', borderRadius: 10, padding: 16, marginBottom: 12, elevation: 2 },
   cardText: { color: '#333', fontSize: 14 },
+  analyticsBtn: { backgroundColor: '#003399', padding: 16, borderRadius: 12, alignItems: 'center', marginBottom: 16 },
+  analyticsBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
   bottomNav: { flexDirection: 'row', backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#ddd', paddingVertical: 12 },
   navItem: { flex: 1, alignItems: 'center' },
   navText: { fontSize: 12, color: '#003399' },
