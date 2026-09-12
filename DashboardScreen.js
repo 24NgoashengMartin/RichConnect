@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 
+
 export default function DashboardScreen({ navigation }) {
   return (
     <View style={styles.container}>
@@ -17,10 +18,13 @@ export default function DashboardScreen({ navigation }) {
         ))}
       </ScrollView>
       <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem}><Text style={styles.navText}>🏠 Home</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Connections')}><Text style={styles.navText}>🤝 Network</Text></TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Profile')}><Text style={styles.navText}>👤 Profile</Text></TouchableOpacity>
         <TouchableOpacity style={styles.navItem}><Text style={styles.navText}>💼 Jobs</Text></TouchableOpacity>
         <TouchableOpacity style={styles.navItem}><Text style={styles.navText}>💬 Chat</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('Search')} style={{marginTop: 8}}>
+        <Text style={{color: '#aac4ff', fontSize: 13}}>🔍 Find People</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );

@@ -4,12 +4,15 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'fire
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 
+const ADMIN_EMAILS = ['admin@richconnect.ac.za', 'admin@richfield.ac.za'];
+
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [userType, setUserType] = useState('Student');
   const [loading, setLoading] = useState(false);
-  const userTypes = ['Student', 'Alumni', 'Business', 'Admin'];
+  const [isLogin, setIsLogin] = useState(true);
+  const userTypes = ['Student', 'Alumni', 'Business'];
 
   const getDashboard = (type) => {
     if (type === 'Business') return 'BusinessDashboard';
@@ -24,7 +27,11 @@ export default function LoginScreen({ navigation }) {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
       const savedType = userDoc.exists() ? userDoc.data().userType : userType;
-      navigation.navigate(getDashboard(savedType));
+      if (savedType === 'Business' && !userDoc.data().approved) {
+        navigation.navigate('PendingApproval');
+      } else {
+        navigation.navigate(getDashboard(savedType));
+      }
     } catch (error) {
       Alert.alert('Login Failed', error.message);
     }
@@ -33,8 +40,11 @@ export default function LoginScreen({ navigation }) {
 
   const handleRegister = async () => {
     if (!email || !password) { Alert.alert('Error', 'Please enter email and password'); return; }
-    if (userType === 'Student' && !email.includes('@richfield.ac.za') && !email.includes('@my.richfield.ac.za') && !email.includes('@gmail.com')) {
-      Alert.alert('Invalid Email', 'Students must use a Richfield email address'); return;
+    if (ADMIN_EMAILS.includes(email.toLowerCase())) {
+      Alert.alert('Not Allowed', 'Admin accounts cannot self-register.'); return;
+    }
+    if (userType === 'Student' && !email.includes('@richfield.ac.za') && !email.includes('@my.richfield.ac.za') && !email.includes('@aaa.ac.za') && !email.includes('@gmail.com')) {
+      Alert.alert('Invalid Email', 'Students must use a Richfield institutional email'); return;
     }
     setLoading(true);
     try {
@@ -43,7 +53,11 @@ export default function LoginScreen({ navigation }) {
         email, userType, createdAt: new Date().toISOString(),
         approved: userType === 'Business' ? false : true
       });
-      navigation.navigate(getDashboard(userType));
+      if (userType === 'Business') {
+        navigation.navigate('PendingApproval');
+      } else {
+        navigation.navigate(getDashboard(userType));
+      }
     } catch (error) {
       Alert.alert('Register Failed', error.message);
     }
@@ -63,11 +77,11 @@ export default function LoginScreen({ navigation }) {
       </View>
       <TextInput style={styles.input} placeholder="Email" placeholderTextColor="#888" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none"/>
       <TextInput style={styles.input} placeholder="Password" placeholderTextColor="#888" value={password} onChangeText={setPassword} secureTextEntry/>
-      <TouchableOpacity style={styles.loginBtn} onPress={handleLogin} disabled={loading}>
-        <Text style={styles.loginText}>{loading ? 'Loading...' : 'Login as ' + userType}</Text>
+      <TouchableOpacity style={styles.loginBtn} onPress={isLogin ? handleLogin : handleRegister} disabled={loading}>
+        <Text style={styles.loginText}>{loading ? 'Loading...' : isLogin ? 'Login' : 'Register as ' + userType}</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.registerBtn} onPress={handleRegister}>
-        <Text style={styles.registerText}>Don't have an account? Register</Text>
+      <TouchableOpacity style={styles.registerBtn} onPress={() => setIsLogin(!isLogin)}>
+        <Text style={styles.registerText}>{isLogin ? "Don't have an account? Register" : "Already have an account? Login"}</Text>
       </TouchableOpacity>
     </KeyboardAvoidingView>
   );

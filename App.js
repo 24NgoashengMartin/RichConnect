@@ -11,6 +11,10 @@ import JobsScreen from './screens/JobsScreen';
 import ChatScreen from './screens/ChatScreen';
 import AnalyticsScreen from './screens/AnalyticsScreen';
 import PostJobScreen from './screens/PostJobScreen'; 
+import PendingApproval from './screens/PendingApproval';
+import SearchScreen from './screens/SearchScreen';
+import ConnectionsScreen from './screens/ConnectionsScreen';
+import MessagingScreen from './screens/MessagingScreen';
 
 const Stack = createStackNavigator();
 
@@ -28,6 +32,10 @@ function App() {
         <Stack.Screen name="Chat" component={ChatScreen} />
         <Stack.Screen name="Analytics" component={AnalyticsScreen} />
         <Stack.Screen name="PostJob" component={PostJobScreen} />
+        <Stack.Screen name="PendingApproval" component={PendingApproval} />
+        <Stack.Screen name="Search" component={SearchScreen} />
+        <Stack.Screen name="Connections" component={ConnectionsScreen} />
+        <Stack.Screen name="Messaging" component={MessagingScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
