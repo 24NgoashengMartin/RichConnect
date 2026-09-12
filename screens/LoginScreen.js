@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../firebase';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -10,12 +11,20 @@ export default function LoginScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
   const userTypes = ['Student', 'Alumni', 'Business', 'Admin'];
 
+  const getDashboard = (type) => {
+    if (type === 'Business') return 'BusinessDashboard';
+    if (type === 'Admin') return 'AdminDashboard';
+    return 'StudentDashboard';
+  };
+
   const handleLogin = async () => {
     if (!email || !password) { Alert.alert('Error', 'Please enter email and password'); return; }
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigation.navigate('Dashboard');
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
+      const savedType = userDoc.exists() ? userDoc.data().userType : userType;
+      navigation.navigate(getDashboard(savedType));
     } catch (error) {
       Alert.alert('Login Failed', error.message);
     }
@@ -24,10 +33,17 @@ export default function LoginScreen({ navigation }) {
 
   const handleRegister = async () => {
     if (!email || !password) { Alert.alert('Error', 'Please enter email and password'); return; }
+    if (userType === 'Student' && !email.includes('@richfield.ac.za') && !email.includes('@my.richfield.ac.za') && !email.includes('@gmail.com')) {
+      Alert.alert('Invalid Email', 'Students must use a Richfield email address'); return;
+    }
     setLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      navigation.navigate('Dashboard');
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await setDoc(doc(db, 'users', userCredential.user.uid), {
+        email, userType, createdAt: new Date().toISOString(),
+        approved: userType === 'Business' ? false : true
+      });
+      navigation.navigate(getDashboard(userType));
     } catch (error) {
       Alert.alert('Register Failed', error.message);
     }
