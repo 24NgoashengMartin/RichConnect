@@ -1,37 +1,60 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 
-const botReplies = {
-  'hi': 'Hello! I am RichAssist, your AI career guide. How can I help you today?',
-  'hello': 'Hi there! Ready to help you land your dream job!',
-  'jobs': 'Based on your profile, I found 5 matching jobs! You are 92% match for Junior Developer at TechCo Pretoria.',
-  'cv': 'Upload your CV and I will auto-fill your profile and suggest improvements!',
-  'wil': 'I can match you with WIL placement opportunities near Pretoria. Want me to search?',
-  'interview': 'I can help you practice interview questions! What role are you applying for?',
-  'default': 'I am still learning! Try asking about jobs, CV, WIL placement or interview tips.',
-};
+const GROQ_API_KEY = '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';
 
 export default function ChatScreen({ navigation }) {
   const [messages, setMessages] = useState([
-    { id: 1, text: 'Hi! I am RichAssist. Your AI career guide. Ask me about jobs, CV tips, or WIL placements!', sender: 'bot' }
+    { id: 1, text: 'Hi! I am RichAssist 🤖 Your AI career guide powered by Groq AI. Ask me about jobs, CV tips, interview prep, or WIL placements!', sender: 'bot' }
   ]);
   const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const sendMessage = () => {
-    if (!input.trim()) return;
+  const sendMessage = async () => {
+    if (!input.trim() || loading) return;
     const userMsg = { id: messages.length + 1, text: input, sender: 'user' };
-    const key = input.toLowerCase().trim();
-    const replyText = botReplies[key] || botReplies['default'];
-    const botMsg = { id: messages.length + 2, text: replyText, sender: 'bot' };
-    setMessages(prev => [...prev, userMsg, botMsg]);
+    setMessages(prev => [...prev, userMsg]);
+    const userInput = input;
     setInput('');
+    setLoading(true);
+
+    try {
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${GROQ_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'llama3-8b-8192',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are RichAssist, an AI career guide for RichConnect - a professional networking platform for South African graduates from Richfield Graduate Institute. Help students with job searching, CV writing, interview preparation, WIL placements, career advice, and professional networking. Keep responses concise and relevant to South African job market. Be encouraging and professional.'
+            },
+            { role: 'user', content: userInput }
+          ],
+          max_tokens: 300,
+        }),
+      });
+
+      const data = await response.json();
+      const botReply = data.choices?.[0]?.message?.content || 'Sorry, I could not process that. Please try again.';
+      setMessages(prev => [...prev, { id: prev.length + 1, text: botReply, sender: 'bot' }]);
+    } catch (e) {
+      setMessages(prev => [...prev, { id: prev.length + 1, text: 'Connection error. Please check your internet and try again.', sender: 'bot' }]);
+    }
+    setLoading(false);
   };
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}><Text style={styles.back}>Back</Text></TouchableOpacity>
-        <Text style={styles.headerTitle}>RichAssist AI</Text>
+        <View>
+          <Text style={styles.headerTitle}>RichAssist AI 🤖</Text>
+          <Text style={styles.headerSub}>Powered by Groq AI</Text>
+        </View>
       </View>
       <ScrollView style={styles.messages}>
         {messages.map(msg => (
@@ -39,10 +62,24 @@ export default function ChatScreen({ navigation }) {
             <Text style={[styles.bubbleText, msg.sender === 'user' ? styles.userText : styles.botText]}>{msg.text}</Text>
           </View>
         ))}
+        {loading && (
+          <View style={styles.botBubble}>
+            <Text style={styles.botText}>RichAssist is thinking... 🤔</Text>
+          </View>
+        )}
       </ScrollView>
       <View style={styles.inputRow}>
-        <TextInput style={styles.input} placeholder="Ask RichAssist..." value={input} onChangeText={setInput} onSubmitEditing={sendMessage} />
-        <TouchableOpacity style={styles.sendBtn} onPress={sendMessage}><Text style={styles.sendText}>Send</Text></TouchableOpacity>
+        <TextInput
+          style={styles.input}
+          placeholder="Ask RichAssist anything..."
+          value={input}
+          onChangeText={setInput}
+          onSubmitEditing={sendMessage}
+          editable={!loading}
+        />
+        <TouchableOpacity style={[styles.sendBtn, loading && {opacity: 0.5}]} onPress={sendMessage} disabled={loading}>
+          <Text style={styles.sendText}>Send</Text>
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
@@ -53,13 +90,14 @@ const styles = StyleSheet.create({
   header: { backgroundColor: '#003399', padding: 24, paddingTop: 48, flexDirection: 'row', alignItems: 'center', gap: 16 },
   back: { color: '#aac4ff', fontSize: 16 },
   headerTitle: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  headerSub: { color: '#aac4ff', fontSize: 11 },
   messages: { flex: 1, padding: 16 },
   bubble: { maxWidth: '80%', padding: 12, borderRadius: 12, marginBottom: 12 },
   botBubble: { backgroundColor: '#fff', alignSelf: 'flex-start', elevation: 1 },
   userBubble: { backgroundColor: '#003399', alignSelf: 'flex-end' },
-  botText: { color: '#333', fontSize: 14 },
-  userText: { color: '#fff', fontSize: 14 },
-  bubbleText: { lineHeight: 20 },
+  botText: { color: '#333', fontSize: 14, lineHeight: 20 },
+  userText: { color: '#fff', fontSize: 14, lineHeight: 20 },
+  bubbleText: {},
   inputRow: { flexDirection: 'row', padding: 12, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#ddd' },
   input: { flex: 1, backgroundColor: '#f0f4ff', borderRadius: 8, padding: 10, fontSize: 14, marginRight: 8 },
   sendBtn: { backgroundColor: '#CC0000', paddingHorizontal: 16, borderRadius: 8, justifyContent: 'center' },
