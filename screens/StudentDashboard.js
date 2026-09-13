@@ -91,6 +91,9 @@ export default function StudentDashboard({ navigation }) {
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Jobs')}><Text style={styles.navText}>💼 Jobs</Text></TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Profile')}><Text style={styles.navText}>👤 Profile</Text></TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Chat')}><Text style={styles.navText}>💬 Chat</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.analyticsBtn} onPress={() => navigation.navigate('Events')}>
+        <Text style={styles.analyticsBtnText}>📅 View Events & Career Fairs</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
