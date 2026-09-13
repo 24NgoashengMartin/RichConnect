@@ -9,9 +9,14 @@ export default function StudentDashboard({ navigation }) {
           <Text style={styles.headerTitle}>RichConnect</Text>
           <Text style={styles.headerSub}>Student Dashboard</Text>
         </View>
-        <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>
-          <Text style={styles.bell}>🔔</Text>
-        </TouchableOpacity>
+        <View style={{flexDirection: 'row', gap: 16}}>
+          <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>
+            <Text style={styles.bell}>🔔</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
+            <Text style={styles.bell}>⚙️</Text>
+          </TouchableOpacity>
+        </View>
       </View>
       <ScrollView style={styles.feed}>
         <TouchableOpacity style={styles.searchBar} onPress={() => navigation.navigate('Search')}>
