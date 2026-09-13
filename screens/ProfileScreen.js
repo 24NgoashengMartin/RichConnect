@@ -7,14 +7,8 @@ export default function ProfileScreen({ navigation }) {
   const [editing, setEditing] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [profile, setProfile] = useState({
-    name: '',
-    headline: '',
-    programme: '',
-    campus: '',
-    skills: '',
-    github: '',
-    linkedin: '',
-    about: '',
+    name: '', headline: '', programme: '', campus: '',
+    skills: '', github: '', linkedin: '', about: '', phone: '', studentNumber: '',
   });
 
   useEffect(() => { loadProfile(); }, []);
@@ -24,11 +18,8 @@ export default function ProfileScreen({ navigation }) {
       const user = auth.currentUser;
       if (!user) return;
       const docSnap = await getDoc(doc(db, 'profiles', user.uid));
-      if (docSnap.exists()) {
-        setProfile(docSnap.data());
-      } else {
-        setEditing(true);
-      }
+      if (docSnap.exists()) { setProfile(docSnap.data()); }
+      else { setEditing(true); }
       setLoaded(true);
     } catch (e) { console.log(e); setLoaded(true); }
   };
@@ -38,11 +29,7 @@ export default function ProfileScreen({ navigation }) {
     try {
       const user = auth.currentUser;
       if (!user) return;
-      await setDoc(doc(db, 'profiles', user.uid), {
-        ...profile,
-        email: user.email,
-        updatedAt: new Date().toISOString(),
-      });
+      await setDoc(doc(db, 'profiles', user.uid), { ...profile, email: user.email, updatedAt: new Date().toISOString() });
       Alert.alert('Success', 'Profile saved!');
       setEditing(false);
     } catch (e) { Alert.alert('Error', e.message); }
@@ -51,17 +38,13 @@ export default function ProfileScreen({ navigation }) {
   const initials = profile.name ? profile.name.split(' ').map(n => n[0]).join('').toUpperCase() : '?';
 
   if (!loaded) return (
-    <View style={styles.loading}>
-      <Text style={styles.loadingText}>Loading profile...</Text>
-    </View>
+    <View style={styles.loading}><Text style={styles.loadingText}>Loading...</Text></View>
   );
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.back}>Back</Text>
-        </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.goBack()}><Text style={styles.back}>Back</Text></TouchableOpacity>
         <Text style={styles.headerTitle}>My Profile</Text>
         <TouchableOpacity onPress={() => editing ? saveProfile() : setEditing(true)}>
           <Text style={styles.editBtn}>{editing ? 'Save' : 'Edit'}</Text>
@@ -69,48 +52,40 @@ export default function ProfileScreen({ navigation }) {
       </View>
       <ScrollView>
         <View style={styles.profileCard}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{initials}</Text>
-          </View>
+          <View style={styles.avatar}><Text style={styles.avatarText}>{initials}</Text></View>
           {editing ? (
             <>
               <TextInput style={styles.editInput} value={profile.name} onChangeText={t => setProfile({...profile, name: t})} placeholder="Full Name *"/>
               <TextInput style={styles.editInput} value={profile.headline} onChangeText={t => setProfile({...profile, headline: t})} placeholder="Professional Headline"/>
+              <TextInput style={styles.editInput} value={profile.studentNumber} onChangeText={t => setProfile({...profile, studentNumber: t})} placeholder="Student Number"/>
+              <TextInput style={styles.editInput} value={profile.phone} onChangeText={t => setProfile({...profile, phone: t})} placeholder="Phone Number"/>
             </>
           ) : (
             <>
               <Text style={styles.name}>{profile.name || 'Add your name'}</Text>
               <Text style={styles.role}>{profile.headline || 'Add your headline'}</Text>
+              {profile.studentNumber ? <Text style={styles.studentNo}>🎓 {profile.studentNumber}</Text> : null}
             </>
           )}
-          <Text style={styles.location}>📍 {profile.campus || 'Add your campus'}</Text>
+          <Text style={styles.location}>📍 {profile.campus || 'Add campus'}</Text>
           <Text style={styles.email}>✉️ {auth.currentUser?.email}</Text>
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>About</Text>
-          {editing ? (
-            <TextInput style={styles.editInput} value={profile.about} onChangeText={t => setProfile({...profile, about: t})} multiline placeholder="Tell employers about yourself..."/>
-          ) : (
-            <Text style={styles.sectionText}>{profile.about || 'Add a professional summary'}</Text>
-          )}
+          {editing ? <TextInput style={styles.editInput} value={profile.about} onChangeText={t => setProfile({...profile, about: t})} multiline placeholder="Tell employers about yourself..."/> : <Text style={styles.sectionText}>{profile.about || 'Add a professional summary'}</Text>}
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Skills</Text>
-          {editing ? (
-            <TextInput style={styles.editInput} value={profile.skills} onChangeText={t => setProfile({...profile, skills: t})} placeholder="e.g. JavaScript, Python, Firebase"/>
-          ) : profile.skills ? (
-            <View style={styles.skillRow}>
-              {profile.skills.split(',').map((skill, i) => (
-                <View key={i} style={styles.skillBadge}>
-                  <Text style={styles.skillText}>{skill.trim()}</Text>
-                </View>
-              ))}
-            </View>
-          ) : (
-            <Text style={styles.placeholder}>Add your skills</Text>
-          )}
+          {editing ? <TextInput style={styles.editInput} value={profile.skills} onChangeText={t => setProfile({...profile, skills: t})} placeholder="e.g. JavaScript, Python, Firebase"/> :
+            profile.skills ? (
+              <View style={styles.skillRow}>
+                {profile.skills.split(',').map((skill, i) => (
+                  <View key={i} style={styles.skillBadge}><Text style={styles.skillText}>{skill.trim()}</Text></View>
+                ))}
+              </View>
+            ) : <Text style={styles.placeholder}>Add your skills</Text>}
         </View>
 
         <View style={styles.section}>
@@ -143,6 +118,9 @@ export default function ProfileScreen({ navigation }) {
           )}
         </View>
 
+        <TouchableOpacity style={styles.strengthBtn} onPress={() => navigation.navigate('ProfileCompleteness')}>
+          <Text style={styles.strengthBtnText}>💪 Check Profile Strength</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.cvBtn} onPress={() => navigation.navigate('CVUpload')}>
           <Text style={styles.cvBtnText}>📄 Upload & Parse CV with AI</Text>
         </TouchableOpacity>
@@ -164,6 +142,7 @@ const styles = StyleSheet.create({
   avatarText: { color: '#fff', fontSize: 28, fontWeight: 'bold' },
   name: { fontSize: 20, fontWeight: 'bold', color: '#003399' },
   role: { fontSize: 13, color: '#666', marginTop: 4, textAlign: 'center' },
+  studentNo: { fontSize: 12, color: '#003399', marginTop: 4 },
   location: { fontSize: 13, color: '#888', marginTop: 4 },
   email: { fontSize: 12, color: '#aac4ff', marginTop: 4 },
   section: { backgroundColor: '#fff', margin: 16, marginTop: 0, borderRadius: 12, padding: 16, elevation: 2 },
@@ -177,6 +156,8 @@ const styles = StyleSheet.create({
   eduSub: { color: '#888', fontSize: 12, marginTop: 2 },
   linkText: { color: '#003399', fontSize: 13, marginBottom: 8 },
   editInput: { backgroundColor: '#f0f4ff', borderRadius: 8, padding: 10, marginBottom: 8, fontSize: 13, color: '#333', borderWidth: 1, borderColor: '#ddd' },
-  cvBtn: { backgroundColor: '#003399', margin: 16, padding: 16, borderRadius: 12, alignItems: 'center', marginBottom: 40 },
+  strengthBtn: { backgroundColor: '#00aa44', margin: 16, marginBottom: 8, padding: 16, borderRadius: 12, alignItems: 'center' },
+  strengthBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
+  cvBtn: { backgroundColor: '#003399', margin: 16, marginTop: 8, padding: 16, borderRadius: 12, alignItems: 'center', marginBottom: 40 },
   cvBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
 });

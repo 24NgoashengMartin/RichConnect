@@ -22,6 +22,7 @@ import SettingsScreen from './screens/SettingsScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
 import CVUploadScreen from './screens/CVUploadScreen';
 import RegisterScreen from './screens/RegisterScreen';
+import ProfileCompletenessScreen from './screens/ProfileCompletenessScreen';
 
 const Stack = createStackNavigator();
 
@@ -50,6 +51,7 @@ function App() {
         <Stack.Screen name="Onboarding" component={OnboardingScreen} />
         <Stack.Screen name="CVUpload" component={CVUploadScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
+        <Stack.Screen name="ProfileCompleteness" component={ProfileCompletenessScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
