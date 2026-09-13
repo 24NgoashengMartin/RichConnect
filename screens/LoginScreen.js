@@ -27,7 +27,7 @@ export default function LoginScreen({ navigation }) {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
       const savedType = userDoc.exists() ? userDoc.data().userType : userType;
-      if (savedType === 'Business' && !userDoc.data().approved) {
+      if (savedType === 'Business' && userDoc.exists() && !userDoc.data().approved) {
         navigation.navigate('PendingApproval');
       } else {
         navigation.navigate(getDashboard(savedType));
@@ -43,9 +43,6 @@ export default function LoginScreen({ navigation }) {
     if (ADMIN_EMAILS.includes(email.toLowerCase())) {
       Alert.alert('Not Allowed', 'Admin accounts cannot self-register.'); return;
     }
-    if (userType === 'Student' && !email.includes('@richfield.ac.za') && !email.includes('@my.richfield.ac.za') && !email.includes('@aaa.ac.za') && !email.includes('@gmail.com')) {
-      Alert.alert('Invalid Email', 'Students must use a Richfield institutional email'); return;
-    }
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -55,6 +52,8 @@ export default function LoginScreen({ navigation }) {
       });
       if (userType === 'Business') {
         navigation.navigate('PendingApproval');
+      } else if (userType === 'Alumni') {
+        navigation.navigate('AlumniVerification');
       } else {
         navigation.navigate(getDashboard(userType));
       }
@@ -80,7 +79,7 @@ export default function LoginScreen({ navigation }) {
       <TouchableOpacity style={styles.loginBtn} onPress={isLogin ? handleLogin : handleRegister} disabled={loading}>
         <Text style={styles.loginText}>{loading ? 'Loading...' : isLogin ? 'Login' : 'Register as ' + userType}</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.registerBtn} onPress={() => setIsLogin(!isLogin)}>
+      <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
         <Text style={styles.registerText}>{isLogin ? "Don't have an account? Register" : "Already have an account? Login"}</Text>
       </TouchableOpacity>
     </KeyboardAvoidingView>
@@ -99,6 +98,5 @@ const styles = StyleSheet.create({
   input: { width: '100%', backgroundColor: '#fff', borderRadius: 8, padding: 14, marginBottom: 16, fontSize: 15, color: '#000' },
   loginBtn: { width: '100%', backgroundColor: '#CC0000', padding: 16, borderRadius: 8, alignItems: 'center', marginBottom: 16 },
   loginText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
-  registerBtn: { marginTop: 8 },
   registerText: { color: '#aac4ff', fontSize: 13 },
 });

@@ -23,21 +23,12 @@ export default function StudentDashboard({ navigation }) {
             <Text style={styles.cardText}>{item}</Text>
           </View>
         ))}
-        <Text style={styles.sectionTitle}>Recommended Jobs</Text>
-        {['Junior Developer - TechCo 92%', 'WIL Placement - MTN 88%', 'IT Support - Vodacom 85%'].map((item, i) => (
-          <View key={i} style={styles.jobCard}>
-            <Text style={styles.jobText}>{item}</Text>
-            <TouchableOpacity style={styles.applyBtn} onPress={() => navigation.navigate('Jobs')}>
-              <Text style={styles.applyText}>View</Text>
-            </TouchableOpacity>
-          </View>
-        ))}
         <TouchableOpacity style={styles.analyticsBtn} onPress={() => navigation.navigate('Analytics')}>
           <Text style={styles.analyticsBtnText}>📊 View My Analytics</Text>
         </TouchableOpacity>
       </ScrollView>
       <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem}><Text style={styles.navText}>🏠 Home</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Feed')}><Text style={styles.navText}>📰 Feed</Text></TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Connections')}><Text style={styles.navText}>🤝 Network</Text></TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Jobs')}><Text style={styles.navText}>💼 Jobs</Text></TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Profile')}><Text style={styles.navText}>👤 Profile</Text></TouchableOpacity>
@@ -59,10 +50,6 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 16, fontWeight: 'bold', color: '#003399', marginBottom: 12, marginTop: 8 },
   card: { backgroundColor: '#fff', borderRadius: 10, padding: 16, marginBottom: 12, elevation: 2 },
   cardText: { color: '#333', fontSize: 14 },
-  jobCard: { backgroundColor: '#fff', borderRadius: 10, padding: 16, marginBottom: 12, elevation: 2, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  jobText: { color: '#003399', fontSize: 13, fontWeight: '600', flex: 1 },
-  applyBtn: { backgroundColor: '#CC0000', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-  applyText: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
   analyticsBtn: { backgroundColor: '#003399', padding: 16, borderRadius: 12, alignItems: 'center', marginBottom: 16 },
   analyticsBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
   bottomNav: { flexDirection: 'row', backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#ddd', paddingVertical: 12 },

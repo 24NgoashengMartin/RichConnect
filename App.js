@@ -16,6 +16,8 @@ import SearchScreen from './screens/SearchScreen';
 import ConnectionsScreen from './screens/ConnectionsScreen';
 import MessagingScreen from './screens/MessagingScreen';
 import NotificationsScreen from './screens/NotificationsScreen';
+import AlumniVerification from './screens/AlumniVerification';
+import FeedScreen from './screens/FeedScreen';
 
 const Stack = createStackNavigator();
 
@@ -38,6 +40,9 @@ function App() {
         <Stack.Screen name="Connections" component={ConnectionsScreen} />
         <Stack.Screen name="Messaging" component={MessagingScreen} />
         <Stack.Screen name="Notifications" component={NotificationsScreen} />
+        <Stack.Screen name="AlumniVerification" component={AlumniVerification} />
+        <Stack.Screen name="Feed" component={FeedScreen} />
+        
       </Stack.Navigator>
     </NavigationContainer>
   );
