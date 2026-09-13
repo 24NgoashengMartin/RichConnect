@@ -1,20 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { collection, query, where, onSnapshot, orderBy, limit } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, limit } from 'firebase/firestore';
 import { auth, db } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 export default function StudentDashboard({ navigation }) {
   const [notifications, setNotifications] = useState([]);
   const [jobs, setJobs] = useState([]);
+  const [userName, setUserName] = useState('');
 
   useEffect(() => {
     const uid = auth.currentUser.uid;
 
+    // Load user name
+    getDoc(doc(db, 'profiles', uid)).then(snap => {
+      if (snap.exists()) setUserName(snap.data().name || '');
+    });
+
+    // Real-time notifications
     const notifQ = query(collection(db, 'connections'), where('to', '==', uid), where('status', '==', 'pending'));
     const unsubNotif = onSnapshot(notifQ, snap => {
       setNotifications(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
 
+    // Real jobs
     const jobsQ = query(collection(db, 'jobs'), where('status', '==', 'Approved'), limit(3));
     const unsubJobs = onSnapshot(jobsQ, snap => {
       setJobs(snap.docs.map(d => ({ id: d.id, ...d.data() })));
@@ -28,7 +37,7 @@ export default function StudentDashboard({ navigation }) {
       <View style={styles.header}>
         <View>
           <Text style={styles.headerTitle}>RichConnect</Text>
-          <Text style={styles.headerSub}>Student Dashboard 🎓</Text>
+          <Text style={styles.headerSub}>Welcome, {userName || auth.currentUser?.email?.split('@')[0]} 👋</Text>
         </View>
         <View style={{flexDirection: 'row', gap: 16}}>
           <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>
@@ -59,7 +68,7 @@ export default function StudentDashboard({ navigation }) {
 
         <Text style={styles.sectionTitle}>Recommended Jobs</Text>
         {jobs.length === 0 ? (
-          <View style={styles.card}><Text style={styles.cardText}>No jobs available yet</Text></View>
+          <View style={styles.card}><Text style={styles.cardText}>No approved jobs yet</Text></View>
         ) : jobs.map(job => (
           <View key={job.id} style={styles.jobCard}>
             <View>
@@ -98,7 +107,7 @@ const styles = StyleSheet.create({
   feed: { padding: 16 },
   searchBar: { backgroundColor: '#fff', borderRadius: 10, padding: 14, marginBottom: 16, elevation: 2 },
   searchText: { color: '#888', fontSize: 14 },
-  alertCard: { backgroundColor: '#003399', borderRadius: 10, padding: 14, marginBottom: 16 },
+  alertCard: { backgroundColor: '#CC0000', borderRadius: 10, padding: 14, marginBottom: 16 },
   alertText: { color: '#fff', fontSize: 13, fontWeight: '600' },
   sectionTitle: { fontSize: 16, fontWeight: 'bold', color: '#003399', marginBottom: 12, marginTop: 8 },
   card: { backgroundColor: '#fff', borderRadius: 10, padding: 16, marginBottom: 12, elevation: 2 },

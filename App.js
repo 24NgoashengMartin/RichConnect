@@ -21,6 +21,7 @@ import FeedScreen from './screens/FeedScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
 import CVUploadScreen from './screens/CVUploadScreen';
+import RegisterScreen from './screens/RegisterScreen';
 
 const Stack = createStackNavigator();
 
@@ -48,6 +49,7 @@ function App() {
         <Stack.Screen name="Settings" component={SettingsScreen} />
         <Stack.Screen name="Onboarding" component={OnboardingScreen} />
         <Stack.Screen name="CVUpload" component={CVUploadScreen} />
+        <Stack.Screen name="Register" component={RegisterScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
