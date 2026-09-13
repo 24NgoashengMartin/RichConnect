@@ -12,18 +12,15 @@ export default function StudentDashboard({ navigation }) {
   useEffect(() => {
     const uid = auth.currentUser.uid;
 
-    // Load user name
     getDoc(doc(db, 'profiles', uid)).then(snap => {
       if (snap.exists()) setUserName(snap.data().name || '');
     });
 
-    // Real-time notifications
     const notifQ = query(collection(db, 'connections'), where('to', '==', uid), where('status', '==', 'pending'));
     const unsubNotif = onSnapshot(notifQ, snap => {
       setNotifications(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
 
-    // Real jobs
     const jobsQ = query(collection(db, 'jobs'), where('status', '==', 'Approved'), limit(3));
     const unsubJobs = onSnapshot(jobsQ, snap => {
       setJobs(snap.docs.map(d => ({ id: d.id, ...d.data() })));
@@ -84,6 +81,15 @@ export default function StudentDashboard({ navigation }) {
         <TouchableOpacity style={styles.analyticsBtn} onPress={() => navigation.navigate('Analytics')}>
           <Text style={styles.analyticsBtnText}>📊 View My Analytics</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity style={styles.eventsBtn} onPress={() => navigation.navigate('Events')}>
+          <Text style={styles.analyticsBtnText}>📅 View Events & Career Fairs</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.articlesBtn} onPress={() => navigation.navigate('Articles')}>
+          <Text style={styles.analyticsBtnText}>📰 Career Articles & Tips</Text>
+        </TouchableOpacity>
+
       </ScrollView>
       <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Feed')}><Text style={styles.navText}>📰 Feed</Text></TouchableOpacity>
@@ -91,9 +97,6 @@ export default function StudentDashboard({ navigation }) {
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Jobs')}><Text style={styles.navText}>💼 Jobs</Text></TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Profile')}><Text style={styles.navText}>👤 Profile</Text></TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Chat')}><Text style={styles.navText}>💬 Chat</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.analyticsBtn} onPress={() => navigation.navigate('Events')}>
-        <Text style={styles.analyticsBtnText}>📅 View Events & Career Fairs</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );
@@ -120,9 +123,11 @@ const styles = StyleSheet.create({
   jobCompany: { fontSize: 12, color: '#666', marginTop: 2 },
   applyBtn: { backgroundColor: '#CC0000', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
   applyText: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
-  analyticsBtn: { backgroundColor: '#003399', padding: 16, borderRadius: 12, alignItems: 'center', marginBottom: 16 },
+  analyticsBtn: { backgroundColor: '#003399', padding: 16, borderRadius: 12, alignItems: 'center', marginBottom: 12 },
+  eventsBtn: { backgroundColor: '#00aa44', padding: 16, borderRadius: 12, alignItems: 'center', marginBottom: 12 },
+  articlesBtn: { backgroundColor: '#CC0000', padding: 16, borderRadius: 12, alignItems: 'center', marginBottom: 16 },
   analyticsBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
   bottomNav: { flexDirection: 'row', backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#ddd', paddingVertical: 12 },
   navItem: { flex: 1, alignItems: 'center' },
-  navText: { fontSize: 11, color: '#003399' },
+  navText: { fontSize: 13, color: '#003399' },
 });
