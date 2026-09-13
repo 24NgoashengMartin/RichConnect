@@ -19,6 +19,7 @@ import NotificationsScreen from './screens/NotificationsScreen';
 import AlumniVerification from './screens/AlumniVerification';
 import FeedScreen from './screens/FeedScreen';
 import SettingsScreen from './screens/SettingsScreen';
+import OnboardingScreen from './screens/OnboardingScreen';
 
 const Stack = createStackNavigator();
 
@@ -44,6 +45,7 @@ function App() {
         <Stack.Screen name="AlumniVerification" component={AlumniVerification} />
         <Stack.Screen name="Feed" component={FeedScreen} />
         <Stack.Screen name="Settings" component={SettingsScreen} />
+        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

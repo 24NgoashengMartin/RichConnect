@@ -55,7 +55,7 @@ export default function LoginScreen({ navigation }) {
       } else if (userType === 'Alumni') {
         navigation.navigate('AlumniVerification');
       } else {
-        navigation.navigate(getDashboard(userType));
+        navigation.navigate('Onboarding');
       }
     } catch (error) {
       Alert.alert('Register Failed', error.message);
