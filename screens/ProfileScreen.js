@@ -5,6 +5,7 @@ import { auth, db } from '../firebase';
 
 export default function ProfileScreen({ navigation }) {
   const [editing, setEditing] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const [profile, setProfile] = useState({
     name: '',
     headline: '',
@@ -15,7 +16,6 @@ export default function ProfileScreen({ navigation }) {
     linkedin: '',
     about: '',
   });
-  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => { loadProfile(); }, []);
 
@@ -38,11 +38,17 @@ export default function ProfileScreen({ navigation }) {
     try {
       const user = auth.currentUser;
       if (!user) return;
-      await setDoc(doc(db, 'profiles', user.uid), profile);
+      await setDoc(doc(db, 'profiles', user.uid), {
+        ...profile,
+        email: user.email,
+        updatedAt: new Date().toISOString(),
+      });
       Alert.alert('Success', 'Profile saved!');
       setEditing(false);
     } catch (e) { Alert.alert('Error', e.message); }
   };
+
+  const initials = profile.name ? profile.name.split(' ').map(n => n[0]).join('').toUpperCase() : '?';
 
   if (!loaded) return (
     <View style={styles.loading}>
@@ -53,7 +59,9 @@ export default function ProfileScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}><Text style={styles.back}>Back</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Text style={styles.back}>Back</Text>
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>My Profile</Text>
         <TouchableOpacity onPress={() => editing ? saveProfile() : setEditing(true)}>
           <Text style={styles.editBtn}>{editing ? 'Save' : 'Edit'}</Text>
@@ -62,7 +70,7 @@ export default function ProfileScreen({ navigation }) {
       <ScrollView>
         <View style={styles.profileCard}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{profile.name ? profile.name.split(' ').map(n => n[0]).join('').toUpperCase() : '?'}</Text>
+            <Text style={styles.avatarText}>{initials}</Text>
           </View>
           {editing ? (
             <>
@@ -76,6 +84,7 @@ export default function ProfileScreen({ navigation }) {
             </>
           )}
           <Text style={styles.location}>📍 {profile.campus || 'Add your campus'}</Text>
+          <Text style={styles.email}>✉️ {auth.currentUser?.email}</Text>
         </View>
 
         <View style={styles.section}>
@@ -94,7 +103,9 @@ export default function ProfileScreen({ navigation }) {
           ) : profile.skills ? (
             <View style={styles.skillRow}>
               {profile.skills.split(',').map((skill, i) => (
-                <View key={i} style={styles.skillBadge}><Text style={styles.skillText}>{skill.trim()}</Text></View>
+                <View key={i} style={styles.skillBadge}>
+                  <Text style={styles.skillText}>{skill.trim()}</Text>
+                </View>
               ))}
             </View>
           ) : (
@@ -131,6 +142,10 @@ export default function ProfileScreen({ navigation }) {
             </>
           )}
         </View>
+
+        <TouchableOpacity style={styles.cvBtn} onPress={() => navigation.navigate('CVUpload')}>
+          <Text style={styles.cvBtnText}>📄 Upload & Parse CV with AI</Text>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -150,6 +165,7 @@ const styles = StyleSheet.create({
   name: { fontSize: 20, fontWeight: 'bold', color: '#003399' },
   role: { fontSize: 13, color: '#666', marginTop: 4, textAlign: 'center' },
   location: { fontSize: 13, color: '#888', marginTop: 4 },
+  email: { fontSize: 12, color: '#aac4ff', marginTop: 4 },
   section: { backgroundColor: '#fff', margin: 16, marginTop: 0, borderRadius: 12, padding: 16, elevation: 2 },
   sectionTitle: { fontSize: 15, fontWeight: 'bold', color: '#003399', marginBottom: 8 },
   sectionText: { color: '#444', fontSize: 13, lineHeight: 20 },
@@ -161,4 +177,6 @@ const styles = StyleSheet.create({
   eduSub: { color: '#888', fontSize: 12, marginTop: 2 },
   linkText: { color: '#003399', fontSize: 13, marginBottom: 8 },
   editInput: { backgroundColor: '#f0f4ff', borderRadius: 8, padding: 10, marginBottom: 8, fontSize: 13, color: '#333', borderWidth: 1, borderColor: '#ddd' },
+  cvBtn: { backgroundColor: '#003399', margin: 16, padding: 16, borderRadius: 12, alignItems: 'center', marginBottom: 40 },
+  cvBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
 });
