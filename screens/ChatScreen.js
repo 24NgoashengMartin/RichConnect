@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 
-const GROQ_API_KEY = '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';
+import { GROQ_API_KEY } from '../config';
 
 export default function ChatScreen({ navigation }) {
   const [messages, setMessages] = useState([
