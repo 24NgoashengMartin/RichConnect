@@ -1,75 +1,89 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
-import { collection, getDocs, query, where } from 'firebase/firestore';
-import { auth, db } from '../firebase';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 
-const defaultJobs = [
-  { id: '1', title: 'Junior Developer', company: 'TechCo Pretoria', type: 'Full-time', skills: 'JavaScript, React Native', location: 'Pretoria', status: 'Approved' },
-  { id: '2', title: 'IT Support Technician', company: 'Vodacom', type: 'Full-time', skills: 'Networking, Windows', location: 'Johannesburg', status: 'Approved' },
-  { id: '3', title: 'Cybersecurity Analyst', company: 'FNB', type: 'Graduate', skills: 'Cybersecurity, Python', location: 'Sandton', status: 'Approved' },
-  { id: '4', title: 'WIL Placement', company: 'MTN', type: 'Learnership', skills: 'JavaScript, Firebase', location: 'Pretoria', status: 'Approved' },
-  { id: '5', title: 'Data Analyst Intern', company: 'Capitec', type: 'Internship', skills: 'Python, Data Analysis', location: 'Cape Town', status: 'Approved' },
-];
+const APP_ID = 'de13ea6f';
+const APP_KEY = '357e6fec52988c66bb3645e950d9b8af';
 
-const calculateMatch = (jobSkills, userSkills) => {
-  if (!userSkills) return 0;
-  const job = jobSkills.toLowerCase().split(',').map(s => s.trim());
-  const user = userSkills.toLowerCase().split(',').map(s => s.trim());
-  const matches = job.filter(s => user.some(u => u.includes(s) || s.includes(u)));
-  return Math.round((matches.length / job.length) * 100);
+const calculateMatch = (jobTitle, userSkills) => {
+  const skills = userSkills.toLowerCase().split(',').map(s => s.trim());
+  const title = jobTitle.toLowerCase();
+  const matches = skills.filter(s => title.includes(s));
+  return Math.min(95, 60 + matches.length * 10);
 };
 
 export default function JobsScreen({ navigation }) {
-  const [search, setSearch] = useState('');
-  const [jobs, setJobs] = useState(defaultJobs);
-  const [userSkills] = useState('JavaScript, React Native, Firebase, Python, Cybersecurity');
+  const [jobs, setJobs] = useState([]);
+  const [search, setSearch] = useState('developer');
+  const [loading, setLoading] = useState(false);
+  const userSkills = 'javascript, react, python, cybersecurity, firebase';
 
-  useEffect(() => { loadJobs(); }, []);
+  useEffect(() => { fetchJobs('developer'); }, []);
 
-  const loadJobs = async () => {
+  const fetchJobs = async (keyword) => {
+    setLoading(true);
     try {
-      const q = query(collection(db, 'jobs'), where('status', '==', 'Approved'));
-      const snapshot = await getDocs(q);
-      const firebaseJobs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      if (firebaseJobs.length > 0) setJobs([...defaultJobs, ...firebaseJobs]);
-    } catch (e) { console.log(e); }
+      const url = `https://api.adzuna.com/v1/api/jobs/za/search/1?app_id=${APP_ID}&app_key=${APP_KEY}&results_per_page=10&what=${keyword}&content-type=application/json`;
+      const response = await fetch(url);
+      const data = await response.json();
+      if (data.results) {
+        setJobs(data.results);
+      }
+    } catch (e) {
+      console.log('Adzuna error:', e);
+    }
+    setLoading(false);
   };
-
-  const filtered = jobs.filter(j =>
-    j.title.toLowerCase().includes(search.toLowerCase()) ||
-    j.company.toLowerCase().includes(search.toLowerCase())
-  );
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Job Listings</Text>
-        <Text style={styles.headerSub}>AI-matched for your profile</Text>
+        <Text style={styles.headerTitle}>Job Listings 🇿🇦</Text>
+        <Text style={styles.headerSub}>Real SA jobs — AI matched for you</Text>
       </View>
       <View style={styles.searchContainer}>
-        <TextInput style={styles.search} placeholder="Search jobs..." value={search} onChangeText={setSearch}/>
+        <TextInput
+          style={styles.search}
+          placeholder="Search jobs..."
+          value={search}
+          onChangeText={setSearch}
+          onSubmitEditing={() => fetchJobs(search)}
+        />
+        <TouchableOpacity style={styles.searchBtn} onPress={() => fetchJobs(search)}>
+          <Text style={styles.searchBtnText}>🔍</Text>
+        </TouchableOpacity>
       </View>
-      <ScrollView style={styles.list}>
-        {filtered.map(job => {
-          const match = calculateMatch(job.skills, userSkills);
-          return (
-            <View key={job.id} style={styles.card}>
-              <View style={styles.cardTop}>
-                <Text style={styles.jobTitle}>{job.title}</Text>
-                <View style={[styles.matchBadge, { backgroundColor: match >= 80 ? '#00aa44' : match >= 60 ? '#f0a500' : '#CC0000' }]}>
-                  <Text style={styles.matchText}>{match}% match</Text>
+      {loading ? (
+        <View style={styles.loading}>
+          <ActivityIndicator size="large" color="#003399"/>
+          <Text style={styles.loadingText}>Finding jobs for you...</Text>
+        </View>
+      ) : (
+        <ScrollView style={styles.list}>
+          {jobs.length === 0 && <Text style={styles.noJobs}>No jobs found — try a different search</Text>}
+          {jobs.map((job, i) => {
+            const match = calculateMatch(job.title, userSkills);
+            return (
+              <View key={i} style={styles.card}>
+                <View style={styles.cardTop}>
+                  <Text style={styles.jobTitle} numberOfLines={2}>{job.title}</Text>
+                  <View style={[styles.matchBadge, { backgroundColor: match >= 80 ? '#00aa44' : match >= 70 ? '#f0a500' : '#CC0000' }]}>
+                    <Text style={styles.matchText}>{match}%</Text>
+                  </View>
+                </View>
+                <Text style={styles.company}>{job.company?.display_name || 'Company'}</Text>
+                <Text style={styles.location}>📍 {job.location?.display_name || 'South Africa'}</Text>
+                {job.salary_min && <Text style={styles.salary}>💰 R{Math.round(job.salary_min).toLocaleString()} - R{Math.round(job.salary_max).toLocaleString()} per year</Text>}
+                <Text style={styles.desc} numberOfLines={2}>{job.description}</Text>
+                <View style={styles.cardBottom}>
+                  <TouchableOpacity style={styles.applyBtn} onPress={() => job.redirect_url && require('react-native').Linking.openURL(job.redirect_url)}>
+                    <Text style={styles.applyText}>Apply Now →</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
-              <Text style={styles.company}>{job.company}</Text>
-              <Text style={styles.location}>📍 {job.location}</Text>
-              <View style={styles.cardBottom}>
-                <View style={styles.typeBadge}><Text style={styles.typeText}>{job.type}</Text></View>
-                <TouchableOpacity style={styles.applyBtn}><Text style={styles.applyText}>Apply Now</Text></TouchableOpacity>
-              </View>
-            </View>
-          );
-        })}
-      </ScrollView>
+            );
+          })}
+        </ScrollView>
+      )}
     </View>
   );
 }
@@ -79,19 +93,24 @@ const styles = StyleSheet.create({
   header: { backgroundColor: '#003399', padding: 24, paddingTop: 48 },
   headerTitle: { color: '#fff', fontSize: 22, fontWeight: 'bold' },
   headerSub: { color: '#aac4ff', fontSize: 13, marginTop: 4 },
-  searchContainer: { padding: 16 },
-  search: { backgroundColor: '#fff', borderRadius: 8, padding: 12, fontSize: 14, elevation: 2 },
+  searchContainer: { flexDirection: 'row', padding: 16, gap: 8 },
+  search: { flex: 1, backgroundColor: '#fff', borderRadius: 8, padding: 12, fontSize: 14, elevation: 2 },
+  searchBtn: { backgroundColor: '#003399', borderRadius: 8, padding: 12, justifyContent: 'center' },
+  searchBtnText: { fontSize: 18 },
+  loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  loadingText: { color: '#003399', marginTop: 12, fontSize: 14 },
   list: { paddingHorizontal: 16 },
+  noJobs: { color: '#888', textAlign: 'center', marginTop: 32, fontSize: 14 },
   card: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 12, elevation: 2 },
-  cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  jobTitle: { fontSize: 15, fontWeight: 'bold', color: '#003399', flex: 1 },
-  matchBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
+  cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },
+  jobTitle: { fontSize: 15, fontWeight: 'bold', color: '#003399', flex: 1, marginRight: 8 },
+  matchBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12, minWidth: 45, alignItems: 'center' },
   matchText: { color: '#fff', fontSize: 11, fontWeight: 'bold' },
-  company: { color: '#444', fontSize: 13, marginTop: 4 },
-  location: { color: '#888', fontSize: 12, marginTop: 2 },
-  cardBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 },
-  typeBadge: { backgroundColor: '#e8eeff', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
-  typeText: { color: '#003399', fontSize: 11, fontWeight: '600' },
+  company: { color: '#444', fontSize: 13, marginBottom: 4 },
+  location: { color: '#888', fontSize: 12, marginBottom: 4 },
+  salary: { color: '#00aa44', fontSize: 12, fontWeight: '600', marginBottom: 4 },
+  desc: { color: '#666', fontSize: 12, lineHeight: 18, marginBottom: 12 },
+  cardBottom: { flexDirection: 'row', justifyContent: 'flex-end' },
   applyBtn: { backgroundColor: '#CC0000', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8 },
   applyText: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
 });
