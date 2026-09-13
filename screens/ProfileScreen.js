@@ -123,6 +123,9 @@ export default function ProfileScreen({ navigation }) {
         </TouchableOpacity>
         <TouchableOpacity style={styles.cvBtn} onPress={() => navigation.navigate('CVUpload')}>
           <Text style={styles.cvBtnText}>📄 Upload & Parse CV with AI</Text>
+          <TouchableOpacity style={{backgroundColor:'#f0a500', margin:16, marginTop:0, padding:16, borderRadius:12, alignItems:'center', marginBottom:40}} onPress={() => navigation.navigate('Endorsements')}>
+          <Text style={{color:'#fff', fontWeight:'bold', fontSize:14}}>👍 View Endorsements</Text>
+       </TouchableOpacity>
         </TouchableOpacity>
       </ScrollView>
     </View>
